@@ -1,0 +1,72 @@
+{
+	"name": "Master of Movies",
+	"properties": {
+		"activities": [
+			{
+				"name": "blob to datalake",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": true
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "movies_blob_to_datalake",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "populate db",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "blob to datalake",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "movies_datalake_to_db",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "move to archive",
+				"type": "ExecutePipeline",
+				"dependsOn": [
+					{
+						"activity": "populate db",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "movies_archive",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2024-09-04T17:59:28Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

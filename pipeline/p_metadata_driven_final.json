@@ -1,0 +1,602 @@
+{
+	"name": "p_metadata_driven_final",
+	"properties": {
+		"activities": [
+			{
+				"name": "get_files_parameters",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "select container, folder, file_name, schema_name, table_name, filemask, column_delimiter, encoding, escape_character, quote_character, diu, column_mapping\nfrom etl.tControlMetadata\norder by container, folder, filemask",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "dsMovies8SQL_extended",
+						"type": "DatasetReference",
+						"parameters": {
+							"custom_table_name": "*",
+							"custom_schema_name": "*"
+						}
+					},
+					"firstRowOnly": false
+				}
+			},
+			{
+				"name": "for_each_file_type",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "get_files_parameters",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('get_files_parameters').output.value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "Get Metadata1",
+							"type": "GetMetadata",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"dataset": {
+									"referenceName": "dsMovies8_extended",
+									"type": "DatasetReference",
+									"parameters": {
+										"custom_delimiter": {
+											"value": "@item().column_delimiter",
+											"type": "Expression"
+										},
+										"custom_encoding": {
+											"value": "@item().encoding",
+											"type": "Expression"
+										},
+										"custom_escape_character": {
+											"value": "@item().escape_character",
+											"type": "Expression"
+										},
+										"custom_quote_character": {
+											"value": "@item().quote_character",
+											"type": "Expression"
+										},
+										"custom_container": {
+											"value": "@item().container",
+											"type": "Expression"
+										},
+										"custom_folder": {
+											"value": "@item().folder",
+											"type": "Expression"
+										},
+										"custom_filename": {
+											"value": "@item().file_name",
+											"type": "Expression"
+										}
+									}
+								},
+								"fieldList": [
+									"childItems"
+								],
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							}
+						},
+						{
+							"name": "upload_files_to_db",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "Get Metadata1",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"additionalColumns": [
+										{
+											"name": "pipelineId",
+											"value": {
+												"value": "@pipeline().RunId",
+												"type": "Expression"
+											}
+										},
+										{
+											"name": "source_filename",
+											"value": "$$FILENAME"
+										}
+									],
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"wildcardFolderPath": {
+											"value": "@item().folder",
+											"type": "Expression"
+										},
+										"wildcardFileName": {
+											"value": "@item().file_name",
+											"type": "Expression"
+										},
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "truncate table @{item().schema_name}.@{item().table_name}",
+										"type": "Expression"
+									},
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"value": "@json(replace(item().column_mapping, '\\', ''))",
+									"type": "Expression"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "dsMovies8_extended",
+									"type": "DatasetReference",
+									"parameters": {
+										"custom_delimiter": {
+											"value": "@item().column_delimiter",
+											"type": "Expression"
+										},
+										"custom_encoding": {
+											"value": "@item().encoding",
+											"type": "Expression"
+										},
+										"custom_escape_character": {
+											"value": "@item().escape_character",
+											"type": "Expression"
+										},
+										"custom_quote_character": {
+											"value": "@item().quote_character",
+											"type": "Expression"
+										},
+										"custom_container": {
+											"value": "@item().container",
+											"type": "Expression"
+										},
+										"custom_folder": {
+											"value": "@item().folder",
+											"type": "Expression"
+										},
+										"custom_filename": {
+											"value": "@item().file_name",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "dsMovies8SQL_extended",
+									"type": "DatasetReference",
+									"parameters": {
+										"custom_table_name": {
+											"value": "@item().table_name",
+											"type": "Expression"
+										},
+										"custom_schema_name": {
+											"value": "@item().schema_name",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						},
+						{
+							"name": "sp_log",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "upload_files_to_db",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[etl].[sp_adf_log_update]",
+								"storedProcedureParameters": {
+									"activity_name": {
+										"value": "upload_files_to_db",
+										"type": "String"
+									},
+									"billing_duration": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.billingReference.billableDuration[0].duration",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"copy_duration": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.copyDuration",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"end_time": {
+										"value": {
+											"value": "@utcNow()",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"meter_type": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.billingReference.billableDuration[0].meterType",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"number_of_parallel_copies": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.usedParallelCopies",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"number_of_processed_files": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.filesRead",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"number_of_read_and_written_rows": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.rowsRead",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"number_of_used_DIU": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.usedDataIntegrationUnits",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"pipeline_name": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"pipeline_run_id": {
+										"value": {
+											"value": "@pipeline().RunId",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"queue_duration": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.executionDetails[0].profile.queue.duration",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"start_time": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.executionDetails[0].start",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"status": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.executionDetails[0].status",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"transfer_duration": {
+										"value": {
+											"value": "@activity('upload_files_to_db').output.executionDetails[0].profile.transfer.duration",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDatabase",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "log_to_data_lake",
+							"type": "Copy",
+							"dependsOn": [
+								{
+									"activity": "upload_files_to_db",
+									"dependencyConditions": [
+										"Succeeded"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "AzureSqlSource",
+									"sqlReaderQuery": {
+										"value": "select\r\n'@{pipeline().Pipeline}' as pipeline_name,\r\n'@{pipeline().RunId}' as pipeline_run_id,\r\n'upload_files_to_db' as activity_name,\r\n'@{activity('upload_files_to_db').output.billingReference.billableDuration[0].duration}' as billing_duration,\r\n'@{activity('upload_files_to_db').output.copyDuration}' as copy_duration,\r\n'@{utcNow()}' as end_time,\r\n'@{activity('upload_files_to_db').output.billingReference.billableDuration[0].meterType}' as meter_type,\r\n'@{activity('upload_files_to_db').output.usedParallelCopies}' as number_of_parallel_copies,\r\n'@{activity('upload_files_to_db').output.filesRead}' as number_of_processed_files,\r\n'@{activity('upload_files_to_db').output.rowsRead}' as number_of_read_and_written_rows,\r\n'@{activity('upload_files_to_db').output.usedDataIntegrationUnits}' as number_of_used_DIU,\r\n'@{activity('upload_files_to_db').output.usedDataIntegrationUnits}' as value,\r\n'@{activity('upload_files_to_db').output.executionDetails[0].profile.queue.duration}' as queue_duration,\r\n'@{activity('upload_files_to_db').output.executionDetails[0].start}' as start_time,\r\n'@{activity('upload_files_to_db').output.executionDetails[0].status}' as status,\r\n'@{activity('upload_files_to_db').output.executionDetails[0].profile.transfer.duration}' as transfer_duration",
+										"type": "Expression"
+									},
+									"queryTimeout": "02:00:00",
+									"partitionOption": "None"
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"copyBehavior": "FlattenHierarchy"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "dsMovies8SQL_extended",
+									"type": "DatasetReference",
+									"parameters": {
+										"custom_table_name": "(select 1)",
+										"custom_schema_name": "stg"
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "dsMovies8_log",
+									"type": "DatasetReference",
+									"parameters": {
+										"custom_filename": {
+											"value": "@{concat(pipeline().RunId, '.csv')}",
+											"type": "Expression"
+										},
+										"custom_folder": "metadata-driven-logs"
+									}
+								}
+							]
+						},
+						{
+							"name": "sp_log_failure",
+							"type": "SqlServerStoredProcedure",
+							"dependsOn": [
+								{
+									"activity": "fail_upload_files",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"storedProcedureName": "[etl].[sp_adf_fails_update]",
+								"storedProcedureParameters": {
+									"activity_name": {
+										"value": "upload_files_to_db",
+										"type": "String"
+									},
+									"error_code": {
+										"value": {
+											"value": "@activity('fail_upload_files').output.errorCode",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"error_message": {
+										"value": {
+											"value": "@activity('fail_upload_files').output.message",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"created": {
+										"value": {
+											"value": "@utcNow()",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"failure_type": {
+										"value": "user-type",
+										"type": "String"
+									},
+									"pipeline_name": {
+										"value": {
+											"value": "@pipeline().Pipeline",
+											"type": "Expression"
+										},
+										"type": "String"
+									},
+									"pipeline_run_id": {
+										"value": {
+											"value": "@pipeline().RunId",
+											"type": "Expression"
+										},
+										"type": "String"
+									}
+								}
+							},
+							"linkedServiceName": {
+								"referenceName": "AzureSqlDatabase",
+								"type": "LinkedServiceReference"
+							}
+						},
+						{
+							"name": "fail_upload_files",
+							"type": "Fail",
+							"dependsOn": [
+								{
+									"activity": "upload_files_to_db",
+									"dependencyConditions": [
+										"Failed"
+									]
+								}
+							],
+							"userProperties": [],
+							"typeProperties": {
+								"message": "Something went wrong",
+								"errorCode": "-3"
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "touch_mail_url",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "get_mail_url",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": {
+						"value": "@activity('get_mail_url').output",
+						"type": "Expression"
+					},
+					"body": {
+						"PipelineName": "@{pipeline().Pipeline}",
+						"DataFactoryName": "@{pipeline().DataFactory}",
+						"Run ID": "@{pipeline().RunId}",
+						"status": "@{activity('Copy Activity').Status}"
+					}
+				}
+			},
+			{
+				"name": "get_mail_url",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "for_each_file_type",
+						"dependencyConditions": [
+							"Succeeded",
+							"Failed"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": {
+						"value": "@pipeline().globalParameters.http_mail_link",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2024-10-29T13:57:19Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

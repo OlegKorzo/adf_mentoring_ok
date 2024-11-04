@@ -1,0 +1,201 @@
+{
+	"name": "online_purchase_datalake_to_db",
+	"properties": {
+		"activities": [
+			{
+				"name": "insert_online_purchase_to_stg",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"additionalColumns": [
+							{
+								"name": "source_filename",
+								"value": "$$FILENAME"
+							},
+							{
+								"name": "pipelineid",
+								"value": {
+									"value": "@pipeline().RunId",
+									"type": "Expression"
+								}
+							}
+						],
+						"storeSettings": {
+							"type": "AzureBlobFSReadSettings",
+							"recursive": true,
+							"wildcardFolderPath": "online",
+							"wildcardFileName": "*.json",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table stg.online_purchase",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['serviceName']"
+								},
+								"sink": {
+									"name": "online_service_name",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['serviceCode']"
+								},
+								"sink": {
+									"name": "online_service_code",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['movieId']"
+								},
+								"sink": {
+									"name": "movie_id",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['userId']"
+								},
+								"sink": {
+									"name": "user_id",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['price']"
+								},
+								"sink": {
+									"name": "price",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['transaction']['id']"
+								},
+								"sink": {
+									"name": "transaction_id",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['transaction']['datetime']"
+								},
+								"sink": {
+									"name": "transaction_date",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['source_filename']"
+								},
+								"sink": {
+									"name": "source_filename",
+									"type": "String"
+								}
+							},
+							{
+								"source": {
+									"path": "$['pipelineid']"
+								},
+								"sink": {
+									"name": "pipelineId",
+									"type": "String"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "datalake_online",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "AzureSqlTableOnlinePurchase",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "populate dbo online purchase",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "insert_online_purchase_to_stg",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spPopulateOnline]"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"variables": {
+			"all_files": {
+				"type": "String"
+			},
+			"filenames": {
+				"type": "Array"
+			},
+			"file_name": {
+				"type": "String"
+			},
+			"table_name": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Online_purchase"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-09-25T13:10:36Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

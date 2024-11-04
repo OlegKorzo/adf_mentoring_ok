@@ -1,0 +1,73 @@
+{
+	"name": "dsMovies8_extended",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "movies8",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"custom_delimiter": {
+				"type": "string"
+			},
+			"custom_encoding": {
+				"type": "string"
+			},
+			"custom_escape_character": {
+				"type": "string"
+			},
+			"custom_quote_character": {
+				"type": "string"
+			},
+			"custom_container": {
+				"type": "string"
+			},
+			"custom_folder": {
+				"type": "string"
+			},
+			"custom_filename": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Module8"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().custom_filename",
+					"type": "Expression"
+				},
+				"folderPath": {
+					"value": "@dataset().custom_folder",
+					"type": "Expression"
+				},
+				"fileSystem": {
+					"value": "@dataset().custom_container",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": {
+				"value": "@dataset().custom_delimiter",
+				"type": "Expression"
+			},
+			"encodingName": {
+				"value": "@dataset().custom_encoding",
+				"type": "Expression"
+			},
+			"escapeChar": {
+				"value": "@dataset().custom_escape_character",
+				"type": "Expression"
+			},
+			"firstRowAsHeader": true,
+			"quoteChar": {
+				"value": "@dataset().custom_quote_character",
+				"type": "Expression"
+			}
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

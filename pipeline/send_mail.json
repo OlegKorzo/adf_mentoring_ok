@@ -1,0 +1,117 @@
+{
+	"name": "send_mail",
+	"properties": {
+		"activities": [
+			{
+				"name": "exec_pipeline",
+				"type": "ExecutePipeline",
+				"dependsOn": [],
+				"policy": {
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"pipeline": {
+						"referenceName": "success_forever",
+						"type": "PipelineReference"
+					},
+					"waitOnCompletion": true
+				}
+			},
+			{
+				"name": "touch_mail_url",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "get_mail_url",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "POST",
+					"url": {
+						"value": "@activity('get_mail_url').output.value",
+						"type": "Expression"
+					},
+					"body": {
+						"value": "{\"PipelineName\":\"@{activity('exec_pipeline').output.pipelineName}\",\n\"DataFactoryName\":\"@{pipeline().DataFactory}\",\n\"Run ID\":\"@{pipeline().RunId}\",\n\"status\":\"@{activity('exec_pipeline').status}\",\n\"error_message\":\"@{variables('error_message')}\"\n}",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "get_mail_url",
+				"type": "WebActivity",
+				"dependsOn": [
+					{
+						"activity": "set_error_message_fail",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"method": "GET",
+					"url": {
+						"value": "@pipeline().globalParameters.http_mail_link",
+						"type": "Expression"
+					},
+					"authentication": {
+						"type": "MSI",
+						"resource": "https://vault.azure.net"
+					}
+				}
+			},
+			{
+				"name": "set_error_message_fail",
+				"type": "SetVariable",
+				"dependsOn": [
+					{
+						"activity": "exec_pipeline",
+						"dependencyConditions": [
+							"Completed"
+						]
+					}
+				],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "error_message",
+					"value": {
+						"value": "@if(contains(activity('exec_pipeline').status, 'Failed'), activity('exec_pipeline').Error.Message, '')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"error_message": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-10-29T17:13:39Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

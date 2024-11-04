@@ -1,0 +1,24 @@
+{
+	"name": "db_azure_sql_Tickets",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureSqlDatabase",
+		"typeProperties": {
+			"server": "azure-mentoring-ok.database.windows.net",
+			"database": "CinemaTickets",
+			"encrypt": "mandatory",
+			"trustServerCertificate": true,
+			"authenticationType": "SQL",
+			"userName": "sql_korzo",
+			"password": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "user-sql-korzo"
+			}
+		}
+	}
+}

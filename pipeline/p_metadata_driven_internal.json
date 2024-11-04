@@ -1,0 +1,279 @@
+{
+	"name": "p_metadata_driven_internal",
+	"properties": {
+		"activities": [
+			{
+				"name": "get_metadata",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "dsMovies8_extended",
+						"type": "DatasetReference",
+						"parameters": {
+							"custom_delimiter": {
+								"value": "@pipeline().parameters.column_delimiter",
+								"type": "Expression"
+							},
+							"custom_encoding": {
+								"value": "@pipeline().parameters.encoding",
+								"type": "Expression"
+							},
+							"custom_escape_character": {
+								"value": "@pipeline().parameters.escape_character",
+								"type": "Expression"
+							},
+							"custom_quote_character": {
+								"value": "@pipeline().parameters.quote_character",
+								"type": "Expression"
+							},
+							"custom_container": {
+								"value": "@pipeline().parameters.container",
+								"type": "Expression"
+							},
+							"custom_folder": {
+								"value": "@pipeline().parameters.folder",
+								"type": "Expression"
+							},
+							"custom_filename": {
+								"value": "@pipeline().parameters.file_name",
+								"type": "Expression"
+							}
+						}
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "ForEach1",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "get_metadata",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('get_metadata').output.childItems",
+						"type": "Expression"
+					},
+					"activities": [
+						{
+							"name": "upload_files_to_db",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"additionalColumns": [
+										{
+											"name": "filename",
+											"value": "$$FILENAME"
+										},
+										{
+											"name": "pipelineid",
+											"value": {
+												"value": "@pipeline().RunId",
+												"type": "Expression"
+											}
+										}
+									],
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"wildcardFolderPath": {
+											"value": "@item().folder",
+											"type": "Expression"
+										},
+										"wildcardFileName": {
+											"value": "@item().file_name",
+											"type": "Expression"
+										},
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "AzureSqlSink",
+									"preCopyScript": {
+										"value": "truncate table @{item().schema_name}.@{item().table_name}",
+										"type": "Expression"
+									},
+									"writeBehavior": "insert",
+									"sqlWriterUseTableLock": false,
+									"disableMetricsCollection": false
+								},
+								"enableStaging": false,
+								"translator": {
+									"value": "@json(replace(item().column_mapping, '\\', ''))",
+									"type": "Expression"
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "dsMovies8_extended",
+									"type": "DatasetReference",
+									"parameters": {
+										"custom_delimiter": {
+											"value": "@pipeline().parameters.column_delimiter",
+											"type": "Expression"
+										},
+										"custom_encoding": {
+											"value": "@pipeline().parameters.encoding",
+											"type": "Expression"
+										},
+										"custom_escape_character": {
+											"value": "@pipeline().parameters.escape_character",
+											"type": "Expression"
+										},
+										"custom_quote_character": {
+											"value": "@pipeline().parameters.quote_character",
+											"type": "Expression"
+										},
+										"custom_container": {
+											"value": "@pipeline().parameters.container",
+											"type": "Expression"
+										},
+										"custom_folder": {
+											"value": "@pipeline().parameters.folder",
+											"type": "Expression"
+										},
+										"custom_filename": {
+											"value": "@item().file_name",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "dsMovies8SQL_extended",
+									"type": "DatasetReference",
+									"parameters": {
+										"custom_table_name": {
+											"value": "@item().table_name",
+											"type": "Expression"
+										},
+										"custom_schema_name": {
+											"value": "@item().schema_name",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"parameters": {
+			"container": {
+				"type": "string",
+				"defaultValue": "raw"
+			},
+			"folder": {
+				"type": "string",
+				"defaultValue": "metadata-driven"
+			},
+			"file_name": {
+				"type": "string",
+				"defaultValue": "credits.csv"
+			},
+			"schema_name": {
+				"type": "string",
+				"defaultValue": "stg"
+			},
+			"table_name": {
+				"type": "string",
+				"defaultValue": "credits"
+			},
+			"column_delimiter": {
+				"type": "string",
+				"defaultValue": ","
+			},
+			"encoding": {
+				"type": "string",
+				"defaultValue": "utf-8"
+			},
+			"escape_character": {
+				"type": "string",
+				"defaultValue": "\""
+			},
+			"quote_character": {
+				"type": "string",
+				"defaultValue": "\""
+			},
+			"diu": {
+				"type": "string",
+				"defaultValue": "4"
+			},
+			"column_mapping": {
+				"type": "string",
+				"defaultValue": {
+					"type": "TabularTranslator",
+					"mappings": [
+						{
+							"source": {
+								"name": "cast"
+							},
+							"sink": {
+								"name": "cast"
+							}
+						},
+						{
+							"source": {
+								"name": "crew"
+							},
+							"sink": {
+								"name": "crew"
+							}
+						},
+						{
+							"source": {
+								"name": "id"
+							},
+							"sink": {
+								"name": "id"
+							}
+						}
+					]
+				}
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-10-18T12:20:16Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

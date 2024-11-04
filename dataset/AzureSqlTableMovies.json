@@ -1,0 +1,28 @@
+{
+	"name": "AzureSqlTableMovies",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"target_table_name": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Movies"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "stg",
+			"table": {
+				"value": "@dataset().target_table_name",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

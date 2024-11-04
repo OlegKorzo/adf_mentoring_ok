@@ -1,0 +1,31 @@
+{
+	"name": "dsb_movies",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureDataLakeStorage",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"filename": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Movies"
+		},
+		"annotations": [],
+		"type": "Binary",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobFSLocation",
+				"fileName": {
+					"value": "@dataset().filename",
+					"type": "Expression"
+				},
+				"folderPath": "movies",
+				"fileSystem": "raw"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

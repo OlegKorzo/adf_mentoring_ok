@@ -1,0 +1,34 @@
+{
+	"name": "dsMovies8SQL",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"custom_table_name": {
+				"type": "string"
+			},
+			"custom_schema_name": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Module8"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": {
+				"value": "@dataset().custom_schema_name",
+				"type": "Expression"
+			},
+			"table": {
+				"value": "@dataset().custom_table_name",
+				"type": "Expression"
+			}
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

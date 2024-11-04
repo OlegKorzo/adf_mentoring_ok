@@ -1,0 +1,25 @@
+{
+	"name": "fail_forever",
+	"properties": {
+		"activities": [
+			{
+				"name": "root_cause",
+				"type": "Fail",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"message": "Error happened here",
+					"errorCode": "2022"
+				}
+			}
+		],
+		"variables": {
+			"error_message": {
+				"type": "String"
+			}
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-10-29T16:29:39Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

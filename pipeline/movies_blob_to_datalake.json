@@ -1,0 +1,172 @@
+{
+	"name": "movies_blob_to_datalake",
+	"properties": {
+		"activities": [
+			{
+				"name": "GetFiles",
+				"type": "GetMetadata",
+				"dependsOn": [
+					{
+						"activity": "set_suffix",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "test_property",
+						"value": "property_value"
+					}
+				],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "SourceCSV",
+						"type": "DatasetReference",
+						"parameters": {
+							"source_filename": "*"
+						}
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobStorageReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "DelimitedTextReadSettings"
+					}
+				}
+			},
+			{
+				"name": "set_suffix",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "suffix_datetime",
+					"value": {
+						"value": "@formatDateTime(utcnow(), '-yyyyMMddHHmmss')",
+						"type": "Expression"
+					}
+				}
+			},
+			{
+				"name": "for_loop",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "GetFiles",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('GetFiles').output.childItems",
+						"type": "Expression"
+					},
+					"isSequential": false,
+					"activities": [
+						{
+							"name": "copy_activity",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "DelimitedTextSource",
+									"storeSettings": {
+										"type": "AzureBlobStorageReadSettings",
+										"recursive": true,
+										"enablePartitionDiscovery": false
+									},
+									"formatSettings": {
+										"type": "DelimitedTextReadSettings"
+									}
+								},
+								"sink": {
+									"type": "DelimitedTextSink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings"
+									},
+									"formatSettings": {
+										"type": "DelimitedTextWriteSettings",
+										"quoteAllText": true,
+										"fileExtension": ".txt"
+									}
+								},
+								"enableStaging": false,
+								"translator": {
+									"type": "TabularTranslator",
+									"typeConversion": true,
+									"typeConversionSettings": {
+										"allowDataTruncation": true,
+										"treatBooleanAsNumber": false
+									}
+								}
+							},
+							"inputs": [
+								{
+									"referenceName": "SourceCSV",
+									"type": "DatasetReference",
+									"parameters": {
+										"source_filename": {
+											"value": "@item().name",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "TargetCSV",
+									"type": "DatasetReference",
+									"parameters": {
+										"target_filename": {
+											"value": "@{split(item().name, '.')[0]}@{variables('suffix_datetime')}.@{split(item().name, '.')[1]}",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			}
+		],
+		"variables": {
+			"suffix_datetime": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Movies"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-09-25T09:35:06Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

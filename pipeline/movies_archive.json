@@ -1,0 +1,154 @@
+{
+	"name": "movies_archive",
+	"properties": {
+		"activities": [
+			{
+				"name": "get files",
+				"type": "GetMetadata",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataset": {
+						"referenceName": "dsb_movies",
+						"type": "DatasetReference",
+						"parameters": {
+							"filename": "*.csv"
+						}
+					},
+					"fieldList": [
+						"childItems"
+					],
+					"storeSettings": {
+						"type": "AzureBlobFSReadSettings",
+						"recursive": true,
+						"enablePartitionDiscovery": false
+					},
+					"formatSettings": {
+						"type": "BinaryReadSettings"
+					}
+				}
+			},
+			{
+				"name": "move one by one",
+				"type": "ForEach",
+				"dependsOn": [
+					{
+						"activity": "only files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('only files').output.Value",
+						"type": "Expression"
+					},
+					"isSequential": true,
+					"activities": [
+						{
+							"name": "move to archive_copy1_copy1",
+							"type": "Copy",
+							"dependsOn": [],
+							"policy": {
+								"timeout": "0.12:00:00",
+								"retry": 0,
+								"retryIntervalInSeconds": 30,
+								"secureOutput": false,
+								"secureInput": false
+							},
+							"userProperties": [],
+							"typeProperties": {
+								"source": {
+									"type": "BinarySource",
+									"storeSettings": {
+										"type": "AzureBlobFSReadSettings",
+										"recursive": true,
+										"deleteFilesAfterCompletion": true
+									},
+									"formatSettings": {
+										"type": "BinaryReadSettings"
+									}
+								},
+								"sink": {
+									"type": "BinarySink",
+									"storeSettings": {
+										"type": "AzureBlobFSWriteSettings",
+										"copyBehavior": "PreserveHierarchy"
+									}
+								},
+								"enableStaging": false
+							},
+							"inputs": [
+								{
+									"referenceName": "dsb_movies",
+									"type": "DatasetReference",
+									"parameters": {
+										"filename": {
+											"value": "@item().Name",
+											"type": "Expression"
+										}
+									}
+								}
+							],
+							"outputs": [
+								{
+									"referenceName": "dsb_movies_archive",
+									"type": "DatasetReference",
+									"parameters": {
+										"file_name": {
+											"value": "@variables('filename')",
+											"type": "Expression"
+										}
+									}
+								}
+							]
+						}
+					]
+				}
+			},
+			{
+				"name": "only files",
+				"type": "Filter",
+				"dependsOn": [
+					{
+						"activity": "get files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"userProperties": [],
+				"typeProperties": {
+					"items": {
+						"value": "@activity('get files').output.childItems",
+						"type": "Expression"
+					},
+					"condition": {
+						"value": "@equals(item().type, 'File')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"filename": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Movies"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-09-25T09:35:06Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

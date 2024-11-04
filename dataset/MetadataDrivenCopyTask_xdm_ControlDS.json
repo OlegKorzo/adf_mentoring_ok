@@ -1,0 +1,20 @@
+{
+	"name": "MetadataDrivenCopyTask_xdm_ControlDS",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureSqlDatabase",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "MetadataDrivenCopyTask_xdm_20241004"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "MainControlTable_xdm"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

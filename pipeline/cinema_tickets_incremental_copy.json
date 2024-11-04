@@ -1,0 +1,204 @@
+{
+	"name": "cinema_tickets_incremental_copy",
+	"properties": {
+		"activities": [
+			{
+				"name": "copyTickets",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "getLastTickets",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					},
+					{
+						"activity": "getMaxTickets",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": {
+							"value": "select CinemaCode as cinema_code,\nCinemaName as cinema_name,\nMovieId as movie_id,\nTicketCount as ticket_count,\nTicketPrice as ticket_price,\nTransactionId as transaction_id,\nTransactionDt as transaction_date\nfrom dbo.Tickets\nwhere 1 = 1\nand TransactionDt > '@{activity('getLastTickets').output.firstRow.last_value}'\nand TransactionDt <= '@{activity('getMaxTickets').output.firstRow.max_value}'",
+							"type": "Expression"
+						},
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"sink": {
+						"type": "AzureSqlSink",
+						"preCopyScript": "truncate table stg.cinema_tickets",
+						"writeBehavior": "insert",
+						"sqlWriterUseTableLock": false,
+						"disableMetricsCollection": false
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "dsCinema",
+						"type": "DatasetReference",
+						"parameters": {
+							"table_name": "Tickets"
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "dsStgMovies",
+						"type": "DatasetReference",
+						"parameters": {
+							"table_name": "cinema_tickets"
+						}
+					}
+				]
+			},
+			{
+				"name": "getLastTickets",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select last_value from dbo.watermark_table where table_name = 'Tickets'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "dsWaterMark",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "getMaxTickets",
+				"type": "Lookup",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select max(TransactionDt) as max_value from dbo.Tickets",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "dsCinema",
+						"type": "DatasetReference",
+						"parameters": {
+							"table_name": "Tickets"
+						}
+					}
+				}
+			},
+			{
+				"name": "spPopulateCinemaTickets",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "copyTickets",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spPopulateCinemaTickets_fromN]"
+				},
+				"linkedServiceName": {
+					"referenceName": "AzureSqlDatabase",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "spSetWatermark",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "spPopulateCinemaTickets",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spSetWatermark]",
+					"storedProcedureParameters": {
+						"p_table_name": {
+							"value": "Tickets",
+							"type": "String"
+						},
+						"p_value": {
+							"value": {
+								"value": "@{activity('getMaxTickets').output.firstRow.max_value}",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "db_azure_sql_Tickets",
+					"type": "LinkedServiceReference"
+				}
+			}
+		],
+		"folder": {
+			"name": "Different"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-09-25T09:35:06Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

@@ -1,0 +1,245 @@
+{
+	"name": "online_purchase_blob_to_datalake",
+	"properties": {
+		"activities": [
+			{
+				"name": "copy_files",
+				"type": "Copy",
+				"dependsOn": [
+					{
+						"activity": "getLastFiles",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [
+					{
+						"name": "Source",
+						"value": "online//"
+					},
+					{
+						"name": "Destination",
+						"value": "online//"
+					}
+				],
+				"typeProperties": {
+					"source": {
+						"type": "JsonSource",
+						"storeSettings": {
+							"type": "AzureBlobStorageReadSettings",
+							"recursive": true,
+							"modifiedDatetimeStart": {
+								"value": "@{activity('getLastFiles').output.firstRow.last_value}",
+								"type": "Expression"
+							},
+							"modifiedDatetimeEnd": {
+								"value": "@variables('current_date')",
+								"type": "Expression"
+							},
+							"wildcardFileName": "*",
+							"enablePartitionDiscovery": false
+						},
+						"formatSettings": {
+							"type": "JsonReadSettings"
+						}
+					},
+					"sink": {
+						"type": "JsonSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings",
+							"copyBehavior": "PreserveHierarchy"
+						},
+						"formatSettings": {
+							"type": "JsonWriteSettings",
+							"filePattern": "setOfObjects"
+						}
+					},
+					"enableStaging": false,
+					"parallelCopies": 32,
+					"dataIntegrationUnits": 4,
+					"translator": {
+						"type": "TabularTranslator",
+						"mappings": [
+							{
+								"source": {
+									"path": "$['serviceName']"
+								},
+								"sink": {
+									"path": "$['serviceName']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['serviceCode']"
+								},
+								"sink": {
+									"path": "$['serviceCode']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['movieId']"
+								},
+								"sink": {
+									"path": "$['movieId']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['userId']"
+								},
+								"sink": {
+									"path": "$['userId']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['price']"
+								},
+								"sink": {
+									"path": "$['price']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['transaction']['id']"
+								},
+								"sink": {
+									"path": "$['transaction']['id']"
+								}
+							},
+							{
+								"source": {
+									"path": "$['transaction']['datetime']"
+								},
+								"sink": {
+									"path": "$['transaction']['datetime']"
+								}
+							}
+						]
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "blob_online",
+						"type": "DatasetReference"
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "datalake_online",
+						"type": "DatasetReference"
+					}
+				]
+			},
+			{
+				"name": "getLastFiles",
+				"type": "Lookup",
+				"dependsOn": [
+					{
+						"activity": "set_current_date",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "AzureSqlSource",
+						"sqlReaderQuery": "select last_value from dbo.watermark_table where table_name = 'json_files_module_7'",
+						"queryTimeout": "02:00:00",
+						"partitionOption": "None"
+					},
+					"dataset": {
+						"referenceName": "dsWaterMark",
+						"type": "DatasetReference"
+					}
+				}
+			},
+			{
+				"name": "spSetWatermark",
+				"type": "SqlServerStoredProcedure",
+				"dependsOn": [
+					{
+						"activity": "copy_files",
+						"dependencyConditions": [
+							"Succeeded"
+						]
+					}
+				],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"storedProcedureName": "[dbo].[spSetWatermark]",
+					"storedProcedureParameters": {
+						"p_table_name": {
+							"value": "json_files_module_7",
+							"type": "String"
+						},
+						"p_value": {
+							"value": {
+								"value": "@variables('current_date')",
+								"type": "Expression"
+							},
+							"type": "String"
+						}
+					}
+				},
+				"linkedServiceName": {
+					"referenceName": "db_azure_sql_Tickets",
+					"type": "LinkedServiceReference"
+				}
+			},
+			{
+				"name": "set_current_date",
+				"type": "SetVariable",
+				"dependsOn": [],
+				"policy": {
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"variableName": "current_date",
+					"value": {
+						"value": "@utcnow('yyyy-MM-dd HH:mm:ss')",
+						"type": "Expression"
+					}
+				}
+			}
+		],
+		"variables": {
+			"current_date": {
+				"type": "String"
+			}
+		},
+		"folder": {
+			"name": "Online_purchase"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-09-25T10:37:25Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

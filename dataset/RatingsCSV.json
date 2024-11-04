@@ -1,0 +1,27 @@
+{
+	"name": "RatingsCSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "AzureBlobStorageRatings",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Movies"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "AzureBlobStorageLocation",
+				"fileName": "ratings.csv",
+				"container": "ratings"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

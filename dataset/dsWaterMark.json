@@ -1,0 +1,17 @@
+{
+	"name": "dsWaterMark",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "db_azure_sql_Tickets",
+			"type": "LinkedServiceReference"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "watermark_table"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

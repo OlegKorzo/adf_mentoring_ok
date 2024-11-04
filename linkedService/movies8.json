@@ -1,0 +1,19 @@
+{
+	"name": "movies8",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"sasUri": "https://azurementoringdatalakeok.dfs.core.windows.net/",
+			"sasToken": {
+				"type": "AzureKeyVaultSecret",
+				"store": {
+					"referenceName": "AzureKeyVault",
+					"type": "LinkedServiceReference"
+				},
+				"secretName": "datalake-storage-uri"
+			}
+		}
+	}
+}

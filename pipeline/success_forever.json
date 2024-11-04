@@ -1,0 +1,19 @@
+{
+	"name": "success_forever",
+	"properties": {
+		"activities": [
+			{
+				"name": "no_action",
+				"type": "Wait",
+				"dependsOn": [],
+				"userProperties": [],
+				"typeProperties": {
+					"waitTimeInSeconds": 1
+				}
+			}
+		],
+		"annotations": [],
+		"lastPublishTime": "2024-10-29T16:33:34Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
