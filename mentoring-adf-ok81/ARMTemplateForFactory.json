@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDatabase'"
 		},
+		"sql_korzo_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'sql_korzo'"
+		},
 		"AzureBlobStorage_properties_typeProperties_sasUri_secretName": {
 			"type": "string",
 			"defaultValue": "sas-blob-url"
@@ -74,6 +78,18 @@
 		"online_blob_storage_properties_typeProperties_sasUri_secretName": {
 			"type": "string",
 			"defaultValue": "blob-sas-url-online"
+		},
+		"sql_korzo_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azure-mentoring-ok.database.windows.net"
+		},
+		"sql_korzo_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "movies"
+		},
+		"sql_korzo_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sql_korzo"
 		},
 		"trgCDCCopy_properties_pipeline_parameters_triggerStartTime": {
 			"type": "string",
@@ -4995,6 +5011,28 @@
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/linkedServices/AzureKeyVault')]"
 			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/sql_korzo')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('sql_korzo_properties_typeProperties_server')]",
+					"database": "[parameters('sql_korzo_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('sql_korzo_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('sql_korzo_password')]"
+					}
+				}
+			},
+			"dependsOn": []
 		},
 		{
 			"name": "[concat(parameters('factoryName'), '/trgCDCCopy')]",

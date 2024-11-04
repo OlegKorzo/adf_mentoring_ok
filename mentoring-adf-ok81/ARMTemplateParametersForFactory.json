@@ -8,6 +8,9 @@
 		"AzureSqlDatabase_password": {
 			"value": ""
 		},
+		"sql_korzo_password": {
+			"value": ""
+		},
 		"AzureBlobStorage_properties_typeProperties_sasUri_secretName": {
 			"value": "sas-blob-url"
 		},
@@ -55,6 +58,15 @@
 		},
 		"online_blob_storage_properties_typeProperties_sasUri_secretName": {
 			"value": "blob-sas-url-online"
+		},
+		"sql_korzo_properties_typeProperties_server": {
+			"value": "azure-mentoring-ok.database.windows.net"
+		},
+		"sql_korzo_properties_typeProperties_database": {
+			"value": "movies"
+		},
+		"sql_korzo_properties_typeProperties_userName": {
+			"value": "sql_korzo"
 		},
 		"trgCDCCopy_properties_pipeline_parameters_triggerStartTime": {
 			"value": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss.fff')"

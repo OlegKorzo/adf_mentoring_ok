@@ -11,6 +11,10 @@
 			"type": "secureString",
 			"metadata": "Secure string for 'password' of 'AzureSqlDatabase'"
 		},
+		"sql_korzo_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'sql_korzo'"
+		},
 		"AzureBlobStorage_properties_typeProperties_sasUri_secretName": {
 			"type": "string",
 			"defaultValue": "sas-blob-url"
@@ -75,6 +79,18 @@
 			"type": "string",
 			"defaultValue": "blob-sas-url-online"
 		},
+		"sql_korzo_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azure-mentoring-ok.database.windows.net"
+		},
+		"sql_korzo_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "movies"
+		},
+		"sql_korzo_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sql_korzo"
+		},
 		"trgCDCCopy_properties_pipeline_parameters_triggerStartTime": {
 			"type": "string",
 			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss.fff')"
@@ -113,6 +129,9 @@
 					"AzureSqlDatabase_password": {
 						"value": "[parameters('AzureSqlDatabase_password')]"
 					},
+					"sql_korzo_password": {
+						"value": "[parameters('sql_korzo_password')]"
+					},
 					"AzureDataLakeStorage_properties_typeProperties_url": {
 						"value": "[parameters('AzureDataLakeStorage_properties_typeProperties_url')]"
 					},
@@ -127,6 +146,15 @@
 					},
 					"AzureSqlDatabase_properties_typeProperties_userName": {
 						"value": "[parameters('AzureSqlDatabase_properties_typeProperties_userName')]"
+					},
+					"sql_korzo_properties_typeProperties_server": {
+						"value": "[parameters('sql_korzo_properties_typeProperties_server')]"
+					},
+					"sql_korzo_properties_typeProperties_database": {
+						"value": "[parameters('sql_korzo_properties_typeProperties_database')]"
+					},
+					"sql_korzo_properties_typeProperties_userName": {
+						"value": "[parameters('sql_korzo_properties_typeProperties_userName')]"
 					}
 				}
 			},
