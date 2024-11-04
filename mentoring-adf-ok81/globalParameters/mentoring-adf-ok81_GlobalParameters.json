@@ -1,0 +1,6 @@
+{
+	"http_mail_link": {
+		"type": "string",
+		"value": "https://mentoring-key-vault-ok.vault.azure.net/secrets/azurementoringlogappsok/c21c1dfa164744afa6e595e4ff79bc96?api-version=7.0"
+	}
+}

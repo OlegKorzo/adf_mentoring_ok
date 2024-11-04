@@ -1,0 +1,235 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "mentoring-adf-ok81"
+		},
+		"AzureSqlDatabase_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'AzureSqlDatabase'"
+		},
+		"AzureBlobStorage_properties_typeProperties_sasUri_secretName": {
+			"type": "string",
+			"defaultValue": "sas-blob-url"
+		},
+		"AzureBlobStorageRatings_properties_typeProperties_sasUri_secretName": {
+			"type": "string",
+			"defaultValue": "sas-blob-ratings-url"
+		},
+		"AzureDataLakeStorage_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://azurementoringdatalakeok.dfs.core.windows.net/"
+		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"type": "string",
+			"defaultValue": "https://mentoring-key-vault-ok.vault.azure.net/"
+		},
+		"AzureSqlDatabase_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azure-mentoring-ok.database.windows.net"
+		},
+		"AzureSqlDatabase_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "movies"
+		},
+		"AzureSqlDatabase_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sql_korzo"
+		},
+		"db_azure_sql_Tickets_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azure-mentoring-ok.database.windows.net"
+		},
+		"db_azure_sql_Tickets_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "CinemaTickets"
+		},
+		"db_azure_sql_Tickets_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sql_korzo"
+		},
+		"db_datamart_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "azure-mentoring-ok.database.windows.net"
+		},
+		"db_datamart_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "DataMart"
+		},
+		"db_datamart_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sql_korzo"
+		},
+		"movies8_sasUri": {
+			"type": "secureString",
+			"metadata": "Secure string for 'sasUri' of 'movies8'"
+		},
+		"movies8_properties_typeProperties_sasToken_secretName": {
+			"type": "string",
+			"defaultValue": "datalake-storage-uri"
+		},
+		"online_blob_storage_properties_typeProperties_sasUri_secretName": {
+			"type": "string",
+			"defaultValue": "blob-sas-url-online"
+		},
+		"trgCDCCopy_properties_pipeline_parameters_triggerStartTime": {
+			"type": "string",
+			"defaultValue": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss.fff')"
+		},
+		"trgCDCCopy_properties_pipeline_parameters_triggerEndTime": {
+			"type": "string",
+			"defaultValue": "@formatDateTime(trigger().outputs.windowEndTime,'yyyy-MM-dd HH:mm:ss.fff')"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "mentoring-adf-ok81_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"AzureSqlDatabase_password": {
+						"value": "[parameters('AzureSqlDatabase_password')]"
+					},
+					"AzureDataLakeStorage_properties_typeProperties_url": {
+						"value": "[parameters('AzureDataLakeStorage_properties_typeProperties_url')]"
+					},
+					"AzureKeyVault_properties_typeProperties_baseUrl": {
+						"value": "[parameters('AzureKeyVault_properties_typeProperties_baseUrl')]"
+					},
+					"AzureSqlDatabase_properties_typeProperties_server": {
+						"value": "[parameters('AzureSqlDatabase_properties_typeProperties_server')]"
+					},
+					"AzureSqlDatabase_properties_typeProperties_database": {
+						"value": "[parameters('AzureSqlDatabase_properties_typeProperties_database')]"
+					},
+					"AzureSqlDatabase_properties_typeProperties_userName": {
+						"value": "[parameters('AzureSqlDatabase_properties_typeProperties_userName')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "mentoring-adf-ok81_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"AzureBlobStorage_properties_typeProperties_sasUri_secretName": {
+						"value": "[parameters('AzureBlobStorage_properties_typeProperties_sasUri_secretName')]"
+					},
+					"AzureBlobStorageRatings_properties_typeProperties_sasUri_secretName": {
+						"value": "[parameters('AzureBlobStorageRatings_properties_typeProperties_sasUri_secretName')]"
+					},
+					"db_azure_sql_Tickets_properties_typeProperties_server": {
+						"value": "[parameters('db_azure_sql_Tickets_properties_typeProperties_server')]"
+					},
+					"db_azure_sql_Tickets_properties_typeProperties_database": {
+						"value": "[parameters('db_azure_sql_Tickets_properties_typeProperties_database')]"
+					},
+					"db_azure_sql_Tickets_properties_typeProperties_userName": {
+						"value": "[parameters('db_azure_sql_Tickets_properties_typeProperties_userName')]"
+					},
+					"db_datamart_properties_typeProperties_server": {
+						"value": "[parameters('db_datamart_properties_typeProperties_server')]"
+					},
+					"db_datamart_properties_typeProperties_database": {
+						"value": "[parameters('db_datamart_properties_typeProperties_database')]"
+					},
+					"db_datamart_properties_typeProperties_userName": {
+						"value": "[parameters('db_datamart_properties_typeProperties_userName')]"
+					},
+					"movies8_sasUri": {
+						"value": "[parameters('movies8_sasUri')]"
+					},
+					"movies8_properties_typeProperties_sasToken_secretName": {
+						"value": "[parameters('movies8_properties_typeProperties_sasToken_secretName')]"
+					},
+					"online_blob_storage_properties_typeProperties_sasUri_secretName": {
+						"value": "[parameters('online_blob_storage_properties_typeProperties_sasUri_secretName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mentoring-adf-ok81_ArmTemplate_0')]"
+			]
+		},
+		{
+			"name": "mentoring-adf-ok81_ArmTemplate_2",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_2.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mentoring-adf-ok81_ArmTemplate_1')]"
+			]
+		},
+		{
+			"name": "mentoring-adf-ok81_ArmTemplate_3",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2024-03-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_3.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"trgCDCCopy_properties_pipeline_parameters_triggerStartTime": {
+						"value": "[parameters('trgCDCCopy_properties_pipeline_parameters_triggerStartTime')]"
+					},
+					"trgCDCCopy_properties_pipeline_parameters_triggerEndTime": {
+						"value": "[parameters('trgCDCCopy_properties_pipeline_parameters_triggerEndTime')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'mentoring-adf-ok81_ArmTemplate_2')]"
+			]
+		}
+	]
+}

@@ -1,0 +1,66 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "mentoring-adf-ok81"
+		},
+		"AzureSqlDatabase_password": {
+			"value": ""
+		},
+		"AzureBlobStorage_properties_typeProperties_sasUri_secretName": {
+			"value": "sas-blob-url"
+		},
+		"AzureBlobStorageRatings_properties_typeProperties_sasUri_secretName": {
+			"value": "sas-blob-ratings-url"
+		},
+		"AzureDataLakeStorage_properties_typeProperties_url": {
+			"value": "https://azurementoringdatalakeok.dfs.core.windows.net/"
+		},
+		"AzureKeyVault_properties_typeProperties_baseUrl": {
+			"value": "https://mentoring-key-vault-ok.vault.azure.net/"
+		},
+		"AzureSqlDatabase_properties_typeProperties_server": {
+			"value": "azure-mentoring-ok.database.windows.net"
+		},
+		"AzureSqlDatabase_properties_typeProperties_database": {
+			"value": "movies"
+		},
+		"AzureSqlDatabase_properties_typeProperties_userName": {
+			"value": "sql_korzo"
+		},
+		"db_azure_sql_Tickets_properties_typeProperties_server": {
+			"value": "azure-mentoring-ok.database.windows.net"
+		},
+		"db_azure_sql_Tickets_properties_typeProperties_database": {
+			"value": "CinemaTickets"
+		},
+		"db_azure_sql_Tickets_properties_typeProperties_userName": {
+			"value": "sql_korzo"
+		},
+		"db_datamart_properties_typeProperties_server": {
+			"value": "azure-mentoring-ok.database.windows.net"
+		},
+		"db_datamart_properties_typeProperties_database": {
+			"value": "DataMart"
+		},
+		"db_datamart_properties_typeProperties_userName": {
+			"value": "sql_korzo"
+		},
+		"movies8_sasUri": {
+			"value": ""
+		},
+		"movies8_properties_typeProperties_sasToken_secretName": {
+			"value": "datalake-storage-uri"
+		},
+		"online_blob_storage_properties_typeProperties_sasUri_secretName": {
+			"value": "blob-sas-url-online"
+		},
+		"trgCDCCopy_properties_pipeline_parameters_triggerStartTime": {
+			"value": "@formatDateTime(trigger().outputs.windowStartTime,'yyyy-MM-dd HH:mm:ss.fff')"
+		},
+		"trgCDCCopy_properties_pipeline_parameters_triggerEndTime": {
+			"value": "@formatDateTime(trigger().outputs.windowEndTime,'yyyy-MM-dd HH:mm:ss.fff')"
+		}
+	}
+}
